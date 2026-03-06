@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>polimo</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-1: #111319;
+      --bg-2: #1a1d25;
+      --card: rgba(24, 25, 33, 0.76);
+      --line: rgba(115, 118, 128, 0.7);
+      --text: #f3f4f6;
+      --muted: #c6cad1;
+      --link-bg: rgba(109, 97, 112, 0.82);
+      --link-bg-hover: #db6767;
+      --select: #8e5858;
+      --accent: #db6767;
+      --accent-soft: rgba(219, 103, 103, 0.22);
+      --petal-1: #ffd1dc;
+      --petal-2: #ffc0cb;
+      --petal-3: #f8a8b8;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(219, 103, 103, 0.08), transparent 30%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      background-attachment: fixed;
+      position: relative;
+      isolation: isolate;
+    }
+
+    ::selection {
+      background: var(--select);
+      color: white;
+    }
+
+    .scene {
+      position: fixed;
+      inset: 0;
+      z-index: -3;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .bg-image {
+      position: absolute;
+      inset: -4%;
+      background-image: url('media/background.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(10px) brightness(0.45) saturate(0.95);
+      transform: scale(1.08);
+      animation: bgFloat 18s ease-in-out infinite alternate;
+    }
+
+    .bg-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(8, 10, 14, 0.28), rgba(8, 10, 14, 0.72)),
+        radial-gradient(circle at 50% 25%, rgba(219, 103, 103, 0.08), transparent 28%);
+    }
+
+
+    .grain {
+      position: absolute;
+      inset: 0;
+      opacity: 0.045;
+      background-image:
+        radial-gradient(circle at 20% 20%, #fff 0.7px, transparent 0.8px),
+        radial-gradient(circle at 80% 40%, #fff 0.7px, transparent 0.8px),
+        radial-gradient(circle at 40% 80%, #fff 0.7px, transparent 0.8px),
+        radial-gradient(circle at 65% 70%, #fff 0.7px, transparent 0.8px);
+      background-size: 180px 180px;
+      animation: grainMove 14s linear infinite;
+    }
+
+    .petals {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .petal {
+      position: absolute;
+      top: -12vh;
+      width: 14px;
+      height: 10px;
+      border-radius: 70% 30% 70% 30%;
+      background: linear-gradient(135deg, var(--petal-1), var(--petal-3));
+      box-shadow: inset -1px -1px 2px rgba(180, 70, 100, 0.18);
+      opacity: 0.78;
+      animation-name: fall, sway, spin;
+      animation-timing-function: linear, ease-in-out, linear;
+      animation-iteration-count: infinite, infinite, infinite;
+      transform-origin: center;
+      filter: blur(0.2px);
+    }
+
+    .petal::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(180deg, rgba(255,255,255,0.45), transparent 70%);
+      opacity: 0.7;
+    }
+
+    .card {
+      position: relative;
+      background: var(--card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 18px 60px rgba(0, 0, 0, 0.35),
+        0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+      overflow: hidden;
+      animation: cardFade 1s ease;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.06), transparent 18%),
+        radial-gradient(circle at top right, rgba(219, 103, 103, 0.08), transparent 24%);
+      pointer-events: none;
+    }
+
+    .separator {
+      height: 1px;
+      width: 100%;
+      background: linear-gradient(90deg, transparent, var(--line), transparent);
+      opacity: 0.95;
+    }
+
+    .inline-link {
+      color: #ddd;
+      background: var(--link-bg);
+      text-decoration: none;
+      padding: 0.1rem 0.35rem;
+      border-radius: 0.35rem;
+      transition: 0.18s ease;
+    }
+
+    .inline-link:hover {
+      color: white;
+      background: var(--link-bg-hover);
+      text-decoration: underline;
+    }
+
+    .social-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #ddd;
+      background: var(--link-bg);
+      text-decoration: none;
+      padding: 0.45rem 0.8rem;
+      border-radius: 0.7rem;
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .social-link:hover {
+      transform: translateY(-2px);
+      color: white;
+      background: var(--link-bg-hover);
+      box-shadow: 0 10px 24px rgba(219, 103, 103, 0.2);
+    }
+
+    .avatar-ring {
+      position: relative;
+      width: fit-content;
+      margin-inline: auto;
+      padding: 4px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #ffd5dc, #db6767, #6d6170);
+      box-shadow:
+        0 0 0 6px rgba(255, 213, 220, 0.04),
+        0 10px 30px rgba(219, 103, 103, 0.22);
+      animation: avatarGlow 4.5s ease-in-out infinite;
+    }
+
+    .avatar-ring::before {
+      content: "";
+      position: absolute;
+      inset: -10px;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 215, 220, 0.12);
+      animation: haloSpin 10s linear infinite;
+    }
+
+    .avatar-ring img {
+      width: 108px;
+      height: 108px;
+      object-fit: cover;
+      border-radius: 9999px;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+      background: #0f1117;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.38rem 0.7rem;
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.06);
+      color: #f7d9df;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-inline: auto;
+      width: fit-content;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.16);
+    }
+
+    .title-glow {
+      text-shadow: 0 0 14px rgba(255, 197, 209, 0.08);
+    }
+
+    .jp-deco {
+      position: absolute;
+      right: 1rem;
+      top: 1rem;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 0.72rem;
+      color: rgba(255, 220, 226, 0.3);
+      letter-spacing: 0.18em;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    @keyframes fall {
+      from { transform: translate3d(0, -12vh, 0) rotate(0deg); }
+      to { transform: translate3d(0, 120vh, 0) rotate(360deg); }
+    }
+
+    @keyframes sway {
+      0%, 100% { margin-left: -10px; }
+      50% { margin-left: 26px; }
+    }
+
+    @keyframes spin {
+      from { border-radius: 70% 30% 70% 30%; }
+      50% { border-radius: 30% 70% 40% 60%; }
+      to { border-radius: 70% 30% 70% 30%; }
+    }
+
+    @keyframes sunPulse {
+      0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.82; }
+      50% { transform: translateX(-50%) scale(1.06); opacity: 1; }
+    }
+
+    @keyframes ringDrift {
+      0%, 100% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 0.5; }
+      50% { transform: translateX(-50%) scale(1.05) rotate(8deg); opacity: 0.8; }
+    }
+
+    @keyframes bgFloat {
+      0% { transform: scale(1.08) translate3d(0, 0, 0); }
+      100% { transform: scale(1.12) translate3d(0, -10px, 0); }
+    }
+
+    @keyframes grainMove {
+      from { transform: translate3d(0, 0, 0); }
+      to { transform: translate3d(30px, 20px, 0); }
+    }
+
+    @keyframes avatarGlow {
+      0%, 100% { box-shadow: 0 0 0 6px rgba(255, 213, 220, 0.04), 0 10px 30px rgba(219, 103, 103, 0.22); }
+      50% { box-shadow: 0 0 0 10px rgba(255, 213, 220, 0.06), 0 16px 40px rgba(219, 103, 103, 0.32); }
+    }
+
+    @keyframes haloSpin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes cardFade {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 640px) {
+      .avatar-ring img {
+        width: 92px;
+        height: 92px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="scene" aria-hidden="true">
+    <div id="bgImage" class="bg-image"></div>
+    <div class="bg-overlay"></div>
+
+    <div class="grain"></div>
+    <div id="petals" class="petals"></div>
+  </div>
+
+  <main class="min-h-screen flex items-center justify-center px-6 py-12 relative z-10">
+    <section class="card w-full max-w-2xl rounded-3xl p-6 md:p-8">
+      <div class="jp-deco">桜 • 夜 • polimo</div>
+
+      <div class="badge mb-5">
+        <span>⛩</span>
+        <span>profilo</span>
+      </div>
+
+      <div class="avatar-ring mb-5">
+        <img
+          src="https://cdn.discordapp.com/avatars/832182324832763956/a_d4d11ef873d4413d189402c088fc2bfe.gif?size=1024&animated=true"
+          alt="Avatar de polimo"
+          draggable="false"
+        />
+      </div>
+
+      <h1 class="title-glow text-center text-3xl md:text-4xl font-bold tracking-tight mb-2">polimo</h1>
+      <p class="text-center text-zinc-300 text-sm md:text-base"></p>
+
+      <div class="separator my-5"></div>
+
+      <div class="space-y-4 text-[1rem] leading-7 relative z-10">
+        <p class="font-bold flex items-center gap-2">
+          <span>🥡</span>
+          <span>
+            Bienvenue sur le profilo de
+            <a class="inline-link" href="https://discord.gg/gNAW6GDFHK" target="_blank" rel="noopener noreferrer">polimo</a>
+          </span>
+        </p>
+
+        <p class="text-zinc-200 font-medium">
+          Moi c'est <span class="font-bold text-white">polimo</span>, j'aime créer des trucs simples, propres et stylés.
+        </p>
+
+      </div>
+
+      <div class="separator my-5"></div>
+
+      <div id="socials" class="space-y-4 relative z-10">
+        <p class="text-[1rem] font-bold flex items-center gap-2">
+          <span>⛩️</span>
+          <span>Mes liens</span>
+        </p>
+
+        <div class="flex flex-wrap gap-3">
+          <a class="social-link" href="http://discord.com/users/832182324832763956" target="_blank" rel="noopener noreferrer">Discord</a>
+          <a class="social-link" href="https://github.com/POLIMOfficiel" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a class="social-link" href="https://www.tiktok.com/@polimofficiel" target="_blank" rel="noopener noreferrer">TikTok</a>
+          <button id="copyMail" class="social-link" type="button">Copier email</button>
+        </div>
+
+        <p class="text-zinc-400 text-sm">
+          Email: <span id="mailText">contact@polimo.fr</span>
+          <span id="copyState" class="ml-2 text-zinc-500"></span>
+        </p>
+      </div>
+
+      <div class="separator mt-6 mb-2"></div>
+      <p class="text-center text-xs text-zinc-500">© <span id="year"></span> polimo</p>
+    </section>
+  </main>
+
+  <script>
+    const year = document.getElementById('year');
+    const copyMail = document.getElementById('copyMail');
+    const copyState = document.getElementById('copyState');
+    const mail = 'contact@polimo.fr';
+    const petals = document.getElementById('petals');
+    const bgImage = document.getElementById('bgImage');
+
+    year.textContent = new Date().getFullYear();
+
+    copyMail.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(mail);
+        copyState.textContent = 'copié !';
+        setTimeout(() => (copyState.textContent = ''), 1800);
+      } catch (error) {
+        copyState.textContent = 'copie impossible';
+      }
+    });
+
+    function createPetals(count = 22) {
+      const colors = ['var(--petal-1)', 'var(--petal-2)', 'var(--petal-3)'];
+      petals.innerHTML = '';
+
+      for (let i = 0; i < count; i++) {
+        const petal = document.createElement('span');
+        petal.className = 'petal';
+        petal.style.left = Math.random() * 100 + 'vw';
+        petal.style.opacity = (0.45 + Math.random() * 0.45).toFixed(2);
+        petal.style.width = 10 + Math.random() * 12 + 'px';
+        petal.style.height = 8 + Math.random() * 8 + 'px';
+        petal.style.background = `linear-gradient(135deg, ${colors[Math.floor(Math.random() * colors.length)]}, ${colors[Math.floor(Math.random() * colors.length)]})`;
+        petal.style.animationDuration = `${8 + Math.random() * 10}s, ${3 + Math.random() * 4}s, ${4 + Math.random() * 6}s`;
+        petal.style.animationDelay = `${-Math.random() * 12}s, ${-Math.random() * 3}s, ${-Math.random() * 4}s`;
+        petal.style.transform = `rotate(${Math.random() * 360}deg)`;
+        petals.appendChild(petal);
+      }
+    }
+
+    const bgFallback = new Image();
+    bgFallback.src = 'media/background.png';
+    bgFallback.onerror = () => {
+      bgImage.style.backgroundImage = "url('media/background.gif')";
+    };
+
+    createPetals(window.innerWidth < 640 ? 14 : 22);
+
+    window.addEventListener('resize', () => {
+      createPetals(window.innerWidth < 640 ? 14 : 22);
+    });
+  </script>
+</body>
+</html>
